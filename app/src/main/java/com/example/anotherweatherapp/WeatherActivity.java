@@ -1,9 +1,7 @@
 package com.example.anotherweatherapp;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -12,7 +10,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
@@ -48,7 +45,6 @@ public class WeatherActivity extends AppCompatActivity {
 
         mTemperature = (TextView)findViewById(R.id.tvTemperature);
         mTemperature.setText(Weather.tempToString());
-        //mTemperature.setText("Whoopsies!");
 
         mWeatherDescription = (TextView)findViewById(R.id.tvWeatherDescription);
         mWeatherDescription.setText(Weather.getWeatherDescription());
@@ -56,43 +52,6 @@ public class WeatherActivity extends AppCompatActivity {
         mLocation = (TextView)findViewById(R.id.tvLocation);
         mLocation.setText(API_LOCATION);
     }//End of onCreate()
-
-/*
-
-    public void getCurrentWeather(@NonNull final String locationName, @NonNull final CurrentWeatherCallback callback) {
-        final String url = String.format("%s?q=%s&appId=%s", URL, locationName, API_KEY);
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
-                            final JSONObject currentWeatherJSONObject = new JSONObject(response);
-                            final JSONArray weather = currentWeatherJSONObject.getJSONArray("weather");
-                            final JSONObject weatherCondition = weather.getJSONObject(0);
-                            final String locationName = currentWeatherJSONObject.getString("name");
-                            final int conditionId = weatherCondition.getInt("id");
-                            final String conditionName = weatherCondition.getString("main");
-                            final double tempKelvin = currentWeatherJSONObject.getJSONObject("main").getDouble("temp");
-                            final CurrentWeather currentWeather = new CurrentWeather(locationName, conditionId, conditionName, tempKelvin);
-                            callback.onCurrentWeather(currentWeather);
-                        } catch (JSONException e) {
-                            callback.onError(e);
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                callback.onError(error);
-            }
-        });
-        stringRequest.setTag(CURRENT_WEATHER_TAG);
-        queue.add(stringRequest);
-    }
-
-
- */
-
-
 
     public void Fetcher(){
         queue = Volley.newRequestQueue(this);
@@ -129,12 +88,8 @@ public class WeatherActivity extends AppCompatActivity {
         queue.add(jsonObjectRequest);
     }
 
-
-
-
 /*
-
-    //Sumthin in here fkn up.  Maybe try Simple volley request instead of Standard
+    //Sumthin in here messed up.  Maybe try Simple volley request instead of Standard
     public void Fetcher(){
         String url = API_LINK + API_LOCATION +API_KEY;
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
@@ -153,7 +108,7 @@ public class WeatherActivity extends AppCompatActivity {
                     //String name = weather.getString("name");
                     currentWeather = new Weather(temp, conditionDescription, API_LOCATION);
                 } catch (JSONException e) {
-                    mTemperature.setText("Whoopsies!");
+                    mTemperature.setText("Whoopsies!");  //These are just for debugging.
                     mWeatherDescription.setText("Whoopsies!");
                     mLocation.setText("Whoopsies!");
                     //e.printStackTrace();
@@ -169,7 +124,5 @@ public class WeatherActivity extends AppCompatActivity {
             }// end ErrorListener
         });// end new JsonObjectRequest
     }
-
-
- */
+*/
 }
