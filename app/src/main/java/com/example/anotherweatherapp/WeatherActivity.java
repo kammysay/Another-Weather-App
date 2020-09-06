@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,13 +24,13 @@ public class WeatherActivity extends AppCompatActivity {
 
     //Fields specific to the XML layout
     TextView mTemperature, mWeatherDescription, mLocation;
+    EditText mLocationInput;
     Button mRefresh;
     Weather currentWeather;
 
-    //Initializing fields.  Just basic stuff for now.
     // Utilizing the OpenWeather API (free version)
     private final static String API_LINK = "https://api.openweathermap.org/data/2.5/weather?q=";
-    private final static String API_LOCATION = "Pittsburgh,us"; //temp hardcoded location, will add location selector shortly
+    private static String API_location = "Pittsburgh,us"; //Initialized as Pittsburgh, user can now change the location
     private final static String API_KEY = "[user key]"; //Key deleted from file prior to commit
 
     //Volley documentation --> https://developer.android.com/training/volley
@@ -44,11 +45,13 @@ public class WeatherActivity extends AppCompatActivity {
         mTemperature = (TextView)findViewById(R.id.tvTemperature);
         mWeatherDescription = (TextView)findViewById(R.id.tvWeatherDescription);
         mLocation = (TextView)findViewById(R.id.tvLocation);
+        mLocationInput = (EditText)findViewById(R.id.etLocationInput);
 
         mRefresh = (Button)findViewById(R.id.bRefresh);
         mRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                API_location = mLocationInput.getText().toString();
                 Fetcher();
                 Displayer();
             }
@@ -59,7 +62,7 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     public void Fetcher(){
-        String url = API_LINK + API_LOCATION + API_KEY;
+        String url = API_LINK + API_location + API_KEY;
         queue = Volley.newRequestQueue(this);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
@@ -70,20 +73,17 @@ public class WeatherActivity extends AppCompatActivity {
                     String description = weatherCondition.getString("main");
                     JSONObject main = response.getJSONObject("main");
                     double temp = main.getDouble("temp");
-                    currentWeather = new Weather(temp, description, API_LOCATION);
+                    String location = response.getString("name");
+                    currentWeather = new Weather(temp, description, location);
                 } catch (JSONException e) {
-                    mTemperature.setText("[temp]");
-                    mWeatherDescription.setText("[description]");
-                    mLocation.setText("[location]");
+                    onFetcherError();
                     Toast.makeText(getBaseContext(), "Failed to parse JSON Data", Toast.LENGTH_LONG).show();
                 }//end catch
             }// end onResponse
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                mTemperature.setText(error.toString());
-                mWeatherDescription.setText("onErrorResponse");
-                mLocation.setText("onErrorResponse");
+                onFetcherError();
                 Toast.makeText(getBaseContext(), "Volley error", Toast.LENGTH_LONG).show();
             }// end ErrorListener
         });// end new JsonObjectRequest
@@ -94,5 +94,11 @@ public class WeatherActivity extends AppCompatActivity {
         mTemperature.setText(Weather.tempToString());
         mWeatherDescription.setText(Weather.getWeatherDescription());
         mLocation.setText(Weather.getWeatherLocation());
+    }
+
+    public void onFetcherError(){
+        mTemperature.setText("[temp]");
+        mWeatherDescription.setText("[description]");
+        mLocation.setText("[location]");
     }
 }
