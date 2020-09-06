@@ -3,7 +3,10 @@ package com.example.anotherweatherapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -20,15 +23,14 @@ public class WeatherActivity extends AppCompatActivity {
 
     //Fields specific to the XML layout
     TextView mTemperature, mWeatherDescription, mLocation;
+    Button mRefresh;
     Weather currentWeather;
 
     //Initializing fields.  Just basic stuff for now.
+    // Utilizing the OpenWeather API (free version)
     private final static String API_LINK = "https://api.openweathermap.org/data/2.5/weather?q=";
     private final static String API_LOCATION = "Pittsburgh,us"; //temp hardcoded location, will add location selector shortly
-    private final static String API_KEY = "&APPID=b9314c460681bbf92233c1bedcc701c4"; //delete from file before posting to GitHub
-    private static String url;
-    // Utilizing the OpenWeather API (free version)
-    // https://api.openweathermap.org/data/2.5/weather?q=Pittsburgh,us&APPID=b9314c460681bbf92233c1bedcc701c4   <-- Whole URL
+    private final static String API_KEY = "[user key]"; //Key deleted from file prior to commit
 
     //Volley documentation --> https://developer.android.com/training/volley
     //Initializing a new RequestQueue
@@ -38,22 +40,26 @@ public class WeatherActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //queue = Volley.newRequestQueue(this);
-        url = API_LINK + API_LOCATION +API_KEY;
-
-        Fetcher();
 
         mTemperature = (TextView)findViewById(R.id.tvTemperature);
-        mTemperature.setText(Weather.tempToString());
-
         mWeatherDescription = (TextView)findViewById(R.id.tvWeatherDescription);
-        mWeatherDescription.setText(Weather.getWeatherDescription());
-
         mLocation = (TextView)findViewById(R.id.tvLocation);
-        mLocation.setText(API_LOCATION);
-    }//End of onCreate()
+
+        mRefresh = (Button)findViewById(R.id.bRefresh);
+        mRefresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Fetcher();
+                Displayer();
+            }
+        });
+
+        Fetcher();
+        Displayer();
+    }
 
     public void Fetcher(){
+        String url = API_LINK + API_LOCATION + API_KEY;
         queue = Volley.newRequestQueue(this);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
@@ -61,68 +67,32 @@ public class WeatherActivity extends AppCompatActivity {
                 try {
                     JSONArray weather = response.getJSONArray("weather");
                     JSONObject weatherCondition = weather.getJSONObject(0);
-                    int conditionID = weatherCondition.getInt("id");
-                    String conditionDescription = weatherCondition.getString("description");
-                    mWeatherDescription.setText(conditionDescription);
-                    JSONArray main = response.getJSONArray("main");
-                    double temp = main.getDouble(0);
-                    //JSONArray sys = response.getJSONArray("sys");
-                    //String name = weather.getString("name");
-                    currentWeather = new Weather(temp, conditionDescription, API_LOCATION);
+                    String description = weatherCondition.getString("main");
+                    JSONObject main = response.getJSONObject("main");
+                    double temp = main.getDouble("temp");
+                    currentWeather = new Weather(temp, description, API_LOCATION);
                 } catch (JSONException e) {
-                    mTemperature.setText("JSON Try/Catch");
-                    mWeatherDescription.setText("JSON Try/Catch");
-                    mLocation.setText("JSON Try/Catch");
-                    //e.printStackTrace();
+                    mTemperature.setText("[temp]");
+                    mWeatherDescription.setText("[description]");
+                    mLocation.setText("[location]");
+                    Toast.makeText(getBaseContext(), "Failed to parse JSON Data", Toast.LENGTH_LONG).show();
                 }//end catch
             }// end onResponse
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                //Handle Error, nothing for now
                 mTemperature.setText(error.toString());
                 mWeatherDescription.setText("onErrorResponse");
                 mLocation.setText("onErrorResponse");
+                Toast.makeText(getBaseContext(), "Volley error", Toast.LENGTH_LONG).show();
             }// end ErrorListener
         });// end new JsonObjectRequest
         queue.add(jsonObjectRequest);
     }
 
-/*
-    //Sumthin in here messed up.  Maybe try Simple volley request instead of Standard
-    public void Fetcher(){
-        String url = API_LINK + API_LOCATION +API_KEY;
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    mWeatherDescription.setText("onResponse");
-                    mTemperature.setText("onResponse");
-                    JSONArray weather = response.getJSONArray("weather");
-                    JSONObject weatherCondition = weather.getJSONObject(0);
-                    int conditionID = weatherCondition.getInt("id");
-                    String conditionDescription = weatherCondition.getString("description");
-                    JSONObject main = response.getJSONObject("main");
-                    double temp = main.getDouble("temp");
-                    //JSONArray sys = response.getJSONArray("sys");
-                    //String name = weather.getString("name");
-                    currentWeather = new Weather(temp, conditionDescription, API_LOCATION);
-                } catch (JSONException e) {
-                    mTemperature.setText("Whoopsies!");  //These are just for debugging.
-                    mWeatherDescription.setText("Whoopsies!");
-                    mLocation.setText("Whoopsies!");
-                    //e.printStackTrace();
-                }//end catch
-            }// end onResponse
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                //Handle Error, nothing for now
-                mTemperature.setText("Whoopsies!");
-                mWeatherDescription.setText("Whoopsies!");
-                mLocation.setText("Whoopsies!");
-            }// end ErrorListener
-        });// end new JsonObjectRequest
+    public void Displayer(){
+        mTemperature.setText(Weather.tempToString());
+        mWeatherDescription.setText(Weather.getWeatherDescription());
+        mLocation.setText(Weather.getWeatherLocation());
     }
-*/
 }

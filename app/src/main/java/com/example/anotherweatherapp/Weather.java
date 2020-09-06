@@ -8,7 +8,7 @@ public class Weather {
     //Constructor
     public Weather(double temp, String description, String location){
         mTemperature = temp;
-        mWeatherDescription = "It gone rain";
+        mWeatherDescription = description;
         mWeatherLocation = location;
     }
 
@@ -24,7 +24,7 @@ public class Weather {
         return mWeatherDescription;
     }
 
-    public String getWeatherLocation() {
+    public static String getWeatherLocation() {
         return mWeatherLocation;
     }
 
