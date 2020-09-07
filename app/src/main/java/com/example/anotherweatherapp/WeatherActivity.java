@@ -22,8 +22,9 @@ import org.json.JSONObject;
 
 public class WeatherActivity extends AppCompatActivity {
 
-    //Fields specific to the XML layout
-    TextView mTemperature, mWeatherDescription, mLocation;
+    //Declaring necessary fields
+    TextView mTemperature, mRealFeel, mWeatherDescription;
+    String mTempInLocation;
     EditText mLocationInput;
     Button mRefresh;
     Weather currentWeather;
@@ -42,9 +43,9 @@ public class WeatherActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTemperature = (TextView)findViewById(R.id.tvTemperature);
+        mTemperature = (TextView)findViewById(R.id.tvTempInLocation);
+        mRealFeel = (TextView)findViewById(R.id.tvRealfeel);
         mWeatherDescription = (TextView)findViewById(R.id.tvWeatherDescription);
-        mLocation = (TextView)findViewById(R.id.tvLocation);
         mLocationInput = (EditText)findViewById(R.id.etLocationInput);
 
         mRefresh = (Button)findViewById(R.id.bRefresh);
@@ -57,8 +58,10 @@ public class WeatherActivity extends AppCompatActivity {
             }
         });
 
+
         Fetcher();
         Displayer();
+        defaultText();
     }
 
     public void Fetcher(){
@@ -73,17 +76,18 @@ public class WeatherActivity extends AppCompatActivity {
                     String description = weatherCondition.getString("main");
                     JSONObject main = response.getJSONObject("main");
                     double temp = main.getDouble("temp");
+                    double feels_like = main.getDouble("feels_like");
                     String location = response.getString("name");
-                    currentWeather = new Weather(temp, description, location);
+                    currentWeather = new Weather(temp, feels_like, description, location);
                 } catch (JSONException e) {
-                    onFetcherError();
+                    defaultText();
                     Toast.makeText(getBaseContext(), "Failed to parse JSON Data", Toast.LENGTH_LONG).show();
                 }//end catch
             }// end onResponse
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                onFetcherError();
+                defaultText();
                 Toast.makeText(getBaseContext(), "Volley error", Toast.LENGTH_LONG).show();
             }// end ErrorListener
         });// end new JsonObjectRequest
@@ -91,14 +95,15 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     public void Displayer(){
-        mTemperature.setText(Weather.tempToString());
-        mWeatherDescription.setText(Weather.getWeatherDescription());
-        mLocation.setText(Weather.getWeatherLocation());
+        mTempInLocation = currentWeather.tempToString() + "°F in " + currentWeather.getWeatherLocation();
+        mTemperature.setText(mTempInLocation);
+        mRealFeel.setText("Feels like " + currentWeather.realFeelToString() + "°F");
+        mWeatherDescription.setText(currentWeather.getWeatherDescription());
     }
 
-    public void onFetcherError(){
-        mTemperature.setText("[temp]");
+    public void defaultText(){
+        mTemperature.setText("[temp]°F in [location]");
+        mRealFeel.setText("Feels like [__]°F");
         mWeatherDescription.setText("[description]");
-        mLocation.setText("[location]");
     }
 }
