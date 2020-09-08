@@ -1,6 +1,7 @@
 package com.example.anotherweatherapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.os.Bundle;
 import android.view.View;
@@ -28,6 +29,7 @@ public class WeatherActivity extends AppCompatActivity {
     EditText mLocationInput;
     Button mRefresh;
     Weather currentWeather;
+    ConstraintLayout mConstraintLayout;
 
     // Utilizing the OpenWeather API (free version)
     private final static String API_LINK = "https://api.openweathermap.org/data/2.5/weather?q=";
@@ -42,11 +44,18 @@ public class WeatherActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mConstraintLayout = (ConstraintLayout)findViewById(R.id.constraintlayout);
 
         mTemperature = (TextView)findViewById(R.id.tvTempInLocation);
         mRealFeel = (TextView)findViewById(R.id.tvRealfeel);
         mWeatherDescription = (TextView)findViewById(R.id.tvWeatherDescription);
         mLocationInput = (EditText)findViewById(R.id.etLocationInput);
+
+        Fetcher();
+        if(currentWeather.readyToDisplay()){
+           Displayer();
+        }
+        dynamicBackground();
 
         mRefresh = (Button)findViewById(R.id.bRefresh);
         mRefresh.setOnClickListener(new View.OnClickListener() {
@@ -55,13 +64,9 @@ public class WeatherActivity extends AppCompatActivity {
                 API_location = mLocationInput.getText().toString();
                 Fetcher();
                 Displayer();
+                dynamicBackground();
             }
         });
-
-
-        Fetcher();
-        Displayer();
-        defaultText();
     }
 
     public void Fetcher(){
@@ -73,12 +78,13 @@ public class WeatherActivity extends AppCompatActivity {
                 try {
                     JSONArray weather = response.getJSONArray("weather");
                     JSONObject weatherCondition = weather.getJSONObject(0);
+                    int conditionID = weatherCondition.getInt("id");
                     String description = weatherCondition.getString("main");
                     JSONObject main = response.getJSONObject("main");
                     double temp = main.getDouble("temp");
                     double feels_like = main.getDouble("feels_like");
                     String location = response.getString("name");
-                    currentWeather = new Weather(temp, feels_like, description, location);
+                    currentWeather = new Weather(temp, feels_like, conditionID, description, location);
                 } catch (JSONException e) {
                     defaultText();
                     Toast.makeText(getBaseContext(), "Failed to parse JSON Data", Toast.LENGTH_LONG).show();
@@ -105,5 +111,11 @@ public class WeatherActivity extends AppCompatActivity {
         mTemperature.setText("[temp]°F in [location]");
         mRealFeel.setText("Feels like [__]°F");
         mWeatherDescription.setText("[description]");
+    }
+
+    public void dynamicBackground(){
+        int id = currentWeather.getWeatherID();
+        if(id>=200 && id<600){mConstraintLayout.setBackground(getDrawable(R.drawable.weather_gradient_storm)); }
+        else{mConstraintLayout.setBackground(getDrawable(R.drawable.weather_gradient_clear)); }
     }
 }
