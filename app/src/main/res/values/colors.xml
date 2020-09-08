@@ -3,4 +3,9 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+
+    <color name="thunderStorm">#2F4F4F</color>
+    <color name="drizzleOrRain">#696969</color>
+    <color name="snow">#FFFAFA</color>
+    <color name="clearClouds">#F0FFF0</color>
 </resources>
