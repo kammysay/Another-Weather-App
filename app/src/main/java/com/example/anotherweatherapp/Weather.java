@@ -4,14 +4,15 @@ package com.example.anotherweatherapp;
 public class Weather {
 
     static double mTemperature, mRealFeel;
-    static int mID;
-    static String mWeatherDescription, mWeatherLocation = "null", mColor;
+    static int mID = 0;
+    static String mIconURL, mWeatherDescription, mWeatherLocation, mColor;
 
     //Constructor
-    public Weather(double temp, double feels_like, int weatherID, String description, String location){
+    public Weather(double temp, double feels_like, int weatherID, String icon, String description, String location){
         mTemperature = temp;
         mRealFeel = feels_like;
         mID = weatherID;
+        mIconURL = setIconURL(icon);
         mWeatherDescription = description;
         mWeatherLocation = location;
         mColor = setColor(weatherID);
@@ -35,8 +36,20 @@ public class Weather {
         return String.valueOf((int)mRealFeel);
     }
 
+    public static double kelvinToFahrenheit(double input){
+        return (input - 273.15)*1.8 +32; //Kevlin to Fahrenheit Formula
+    }
+
     public static int getWeatherID(){
         return mID;
+    }
+
+    public static String setIconURL(String iconID){
+        return "https://openweathermap.org/img/wn/" + iconID + "@2x.png";
+    }
+
+    public static String getIconURL(){
+        return mIconURL;
     }
 
     public static String getWeatherDescription() {
@@ -45,10 +58,6 @@ public class Weather {
 
     public static String getWeatherLocation() {
         return mWeatherLocation;
-    }
-
-    public static double kelvinToFahrenheit(double input){
-        return (input - 273.15)*1.8 +32; //Kevlin to Fahrenheit Formula
     }
 
     public static String getColor(){
@@ -65,9 +74,8 @@ public class Weather {
     }
 
     public static boolean readyToDisplay(){
-        boolean ready = false;
-        if(mWeatherLocation.equals("null")){
-            return true;
+        if(mID==0){
+            return false;
         }else return true;
     }
 }

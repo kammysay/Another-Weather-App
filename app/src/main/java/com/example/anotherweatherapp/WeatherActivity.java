@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,6 +17,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,11 +32,12 @@ public class WeatherActivity extends AppCompatActivity {
     Button mRefresh;
     Weather currentWeather;
     ConstraintLayout mConstraintLayout;
+    ImageView ivIcon;
 
     // Utilizing the OpenWeather API (free version)
     private final static String API_LINK = "https://api.openweathermap.org/data/2.5/weather?q=";
     private static String API_location = "Pittsburgh,us"; //Initialized as Pittsburgh, user can now change the location
-    private final static String API_KEY = "[user key]"; //Key deleted from file prior to commit
+    private final static String API_KEY = "&APPID=b9314c460681bbf92233c1bedcc701c4"; //Key deleted from file prior to commit
 
     //Volley documentation --> https://developer.android.com/training/volley
     //Initializing a new RequestQueue
@@ -50,8 +53,11 @@ public class WeatherActivity extends AppCompatActivity {
         mRealFeel = (TextView)findViewById(R.id.tvRealfeel);
         mWeatherDescription = (TextView)findViewById(R.id.tvWeatherDescription);
         mLocationInput = (EditText)findViewById(R.id.etLocationInput);
+        ivIcon = (ImageView)findViewById(R.id.ivIcon);
 
+        mTemperature.setText("loading...");
         Fetcher();
+        //do this in a while loop
         if(currentWeather.readyToDisplay()){
            Displayer();
         }
@@ -80,11 +86,12 @@ public class WeatherActivity extends AppCompatActivity {
                     JSONObject weatherCondition = weather.getJSONObject(0);
                     int conditionID = weatherCondition.getInt("id");
                     String description = weatherCondition.getString("main");
+                    String icon = weatherCondition.getString("icon");
                     JSONObject main = response.getJSONObject("main");
                     double temp = main.getDouble("temp");
                     double feels_like = main.getDouble("feels_like");
                     String location = response.getString("name");
-                    currentWeather = new Weather(temp, feels_like, conditionID, description, location);
+                    currentWeather = new Weather(temp, feels_like, conditionID, icon, description, location);
                 } catch (JSONException e) {
                     defaultText();
                     Toast.makeText(getBaseContext(), "Failed to parse JSON Data", Toast.LENGTH_LONG).show();
@@ -105,6 +112,8 @@ public class WeatherActivity extends AppCompatActivity {
         mTemperature.setText(mTempInLocation);
         mRealFeel.setText("Feels like " + currentWeather.realFeelToString() + "°F");
         mWeatherDescription.setText(currentWeather.getWeatherDescription());
+        //Utilizing open source image loading framework Glide, https://github.com/bumptech/glide
+        Glide.with(this).load(currentWeather.getIconURL()).into(ivIcon);
     }
 
     public void defaultText(){
